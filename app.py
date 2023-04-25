@@ -8,21 +8,21 @@ from streamlit_drawable_canvas import st_canvas
 st.set_option('deprecation.showfileUploaderEncoding', False)
 
 # ตั้งค่าขนาดหน้าจอ
-st.set_page_config(page_title="My Streamlit App", page_icon=":guardsman:", layout="wide")
-st.markdown(
-    f"""
-    <style>
-        .reportview-container .main .block-container {{
-            max-width: 100px;
-            padding-top: 1rem;
-            padding-right: 1rem;
-            padding-left: 1rem;
-            padding-bottom: 1rem;
-        }}
-    </style>
-    """,
-    unsafe_allow_html=True
-)
+# st.set_page_config(page_title="My Streamlit App", page_icon=":guardsman:", layout="wide")
+# st.markdown(
+#     f"""
+#     <style>
+#         .reportview-container .main .block-container {{
+#             max-width: 100px;
+#             padding-top: 1rem;
+#             padding-right: 1rem;
+#             padding-left: 1rem;
+#             padding-bottom: 1rem;
+#         }}
+#     </style>
+#     """,
+#     unsafe_allow_html=True
+# )
 
 st.markdown("<h1 style='font-size:42px;'>Intelligent Calculation Application using Multiple Handwritten Digit Recognition.</h1>", unsafe_allow_html=True)
 
