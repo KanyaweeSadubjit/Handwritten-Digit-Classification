@@ -1,130 +1,49 @@
 import cv2
-import numpy as np
-from tensorflow.keras.models import load_model
-# streamlit
 import streamlit as st
-from streamlit_drawable_canvas import st_canvas
+import numpy as np
+from PIL import Image
 
-st.set_option('deprecation.showfileUploaderEncoding', False)
 
-# ตั้งค่าขนาดหน้าจอ
-st.set_page_config(page_title="My Streamlit App", page_icon=":guardsman:", layout="wide")
-st.markdown(
-    f"""
-    <style>
-        .reportview-container .main .block-container {{
-            max-width: 100px;
-            padding-top: 1rem;
-            padding-right: 1rem;
-            padding-left: 1rem;
-            padding-bottom: 1rem;
-        }}
-    </style>
-    """,
-    unsafe_allow_html=True
-)
+def brighten_image(image, amount):
+    img_bright = cv2.convertScaleAbs(image, beta=amount)
+    return img_bright
 
-st.markdown("<h1 style='font-size:42px;'>Intelligent Calculation Application using Multiple Handwritten Digit Recognition.</h1>", unsafe_allow_html=True)
 
-# Define the canvas
-canvas = st_canvas(
-    fill_color="#ffffff",
-    stroke_width=5,
-    stroke_color="#000000",
-    background_color="#ffffff",
-    height=180,
-    width=1500,
-    drawing_mode="freedraw",
-    key="canvas"
-)
+def blur_image(image, amount):
+    blur_img = cv2.GaussianBlur(image, (11, 11), amount)
+    return blur_img
 
-# When the user clicks on "Predict"
-if st.button("Predict"):
-    model = load_model("model_final")
-    if canvas.image_data is not None:
-        # Process the image
-        img = cv2.cvtColor(canvas.image_data.astype("uint8"), cv2.COLOR_BGR2GRAY)
-        img = cv2.bitwise_not(img)
-        _, thresh = cv2.threshold(img, 127, 255, cv2.THRESH_BINARY)
-        ctrs, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
-        cnt = sorted(ctrs, key=lambda ctr: cv2.boundingRect(ctr)[0])
-        w = int(28)
-        h = int(28)
-        train_data = []
-        rects = []
 
-        for c in cnt:
-            x, y, w, h = cv2.boundingRect(c)
-            rect = [x, y, w, h]
-            rects.append(rect)
+def enhance_details(img):
+    hdr = cv2.detailEnhance(img, sigma_s=12, sigma_r=0.15)
+    return hdr
 
-        bool_rect = []
 
-        for r in rects:
-            l = []
-            for rec in rects:
-                flag = 0
-                if rec != r:
-                    if r[0] < (rec[0] + rec[2] + 10) and rec[0] < (r[0] + r[2] + 10) and r[1] < (rec[1] + rec[3] + 10) and rec[1] < (r[1] + r[3] + 10):
-                        flag = 1
-                    l.append(flag)
-                if rec == r:
-                    l.append(0)
-            bool_rect.append(l)
+def main_loop():
+    st.title("OpenCV Demo App")
+    st.subheader("This app allows you to play with Image filters!")
+    st.text("We use OpenCV and Streamlit for this demo")
 
-        dump_rect = []
+    blur_rate = st.sidebar.slider("Blurring", min_value=0.5, max_value=3.5)
+    brightness_amount = st.sidebar.slider("Brightness", min_value=-50, max_value=50, value=0)
+    apply_enhancement_filter = st.sidebar.checkbox('Enhance Details')
 
-        for i in range(0, len(cnt)):
-            for j in range(0, len(cnt)):
-                if bool_rect[i][j] == 1:
-                    area1 = rects[i][2] * rects[i][3]
-                    area2 = rects[j][2] * rects[j][3]
-                    if (area1 == min(area1, area2)):
-                        dump_rect.append(rects[i])
+    image_file = st.file_uploader("Upload Your Image", type=['jpg', 'png', 'jpeg'])
+    if not image_file:
+        return None
 
-        final_rect = [i for i in rects if i not in dump_rect]
+    original_image = Image.open(image_file)
+    original_image = np.array(original_image)
 
-        for r in final_rect:
-            x = r[0]
-            y = r[1]
-            w = r[2]
-            h = r[3]
-            im_crop = thresh[y:y + h + 10, x:x + w + 10]
-            im_resize = cv2.resize(im_crop, (28, 28))
-            im_resize = np.reshape(im_resize, (28, 28, 1))
-            train_data.append(im_resize)
+    processed_image = blur_image(original_image, blur_rate)
+    processed_image = brighten_image(processed_image, brightness_amount)
 
-        equation = ''
+    if apply_enhancement_filter:
+        processed_image = enhance_details(processed_image)
 
-        for i in range(len(train_data)):
-            train_data[i] = np.array(train_data[i])
-            train_data[i] = train_data[i].reshape(1, 28, 28, 1)
-            result = np.argmax(model.predict(train_data[i]), axis=-1)
+    st.text("Original Image vs Processed Image")
+    st.image([original_image, processed_image])
 
-            for j in range(10):
-                if result[0] == j:
-                    equation = equation + str(j)
 
-            if result[0] == 10:
-                equation = equation + "+"
-            if result[0] == 11:
-                equation = equation + "-"
-            if result[0] == 12:
-                equation = equation + "*"
-            if result[0] == 13:
-                equation = equation + "*"
-            if result[0] == 14:
-                equation = equation + "/"
-            if result[0] == 15:
-                equation = equation + "/"
-            if result[0] == 16:
-                equation = equation + "."
-                    
-            print("Your Equation :", equation)
-
-        # st.title('Handwritten OCR')
-        st.write('<span style="font-size:28px">The evaluation of the image gives: </span>', unsafe_allow_html=True)
-        st.write('<span style="font-size:28px">{}</span>'.format(equation), unsafe_allow_html=True)
-        f = eval(equation)
-        print('Result: ', '%.2f' %f)
-        st.write('<span style="font-size:28px">Result:</span>', '<span style="font-size:28px">%.2f</span>' %f, unsafe_allow_html=True)
+if __name__ == '__main__':
+    main_loop()
