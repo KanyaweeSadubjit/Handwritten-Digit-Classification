@@ -40,7 +40,7 @@ canvas = st_canvas(
 
 # When the user clicks on "Predict"
 if st.button("Predict"):
-    model = load_model("model_final")
+    model = keras.models.load_model("model_final")
     if canvas.image_data is not None:
         # Process the image
         img = cv2.cvtColor(canvas.image_data.astype("uint8"), cv2.COLOR_BGR2GRAY)
