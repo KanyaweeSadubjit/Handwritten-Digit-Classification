@@ -5,7 +5,7 @@ from tensorflow import keras
 import streamlit as st
 from streamlit_drawable_canvas import st_canvas
 
-st.set_option('deprecation.showfileUploaderEncoding', False)
+# st.set_option('deprecation.showfileUploaderEncoding', False)
 
 # ตั้งค่าขนาดหน้าจอ
 # st.set_page_config(page_title="My Streamlit App", page_icon=":guardsman:", layout="wide")
@@ -24,8 +24,10 @@ st.set_option('deprecation.showfileUploaderEncoding', False)
 #     unsafe_allow_html=True
 # )
 
-st.markdown("<h1 style='font-size:42px;'>Intelligent Calculation Application using Multiple Handwritten Digit Recognition.</h1>", unsafe_allow_html=True)
+st.set_option('deprecation.showfileUploaderEncoding', False)
 
+st.title("Intelligent Calculation Application using Multiple Handwritten Digit Recognition.")
+st.write("Drawing Calculation Application")
 # Define the canvas
 canvas = st_canvas(
     fill_color="#ffffff",
