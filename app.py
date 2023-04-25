@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-from tensorflow.keras.models import load_model
+from tensorflow import keras
 # streamlit
 import streamlit as st
 from streamlit_drawable_canvas import st_canvas
